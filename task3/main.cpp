@@ -22,21 +22,15 @@ int main()
         .verticalFOV = 0.55f,
     };
 
-    
-    std::ifstream mesh("../Cup.obj");
-    std::vector<Triangle> triangle = parseOBJ(mesh);
-    Tree const tree = createTree(triangle);
-    Image const image = createImage("../texture.png");
+    std::vector<Triangle> triangle = maketrigon("../Cup.obj");
 
-    
-    
-    auto const trace = [&sphere](Ray const &ray)
+    auto const trace = [&triangle](Ray const &ray)
     {
         vec3 const   skyColor = {0.53f, 0.81f, 0.92f};
         vec3 const lightColor = {1.00f, 0.98f, 0.88f};
         vec3 const lightDir   = normalize({3.f, 3.f, -1.f});
 
-        std::optional<Hit> const hit = closestHit(ray, sphere);
+        std::optional<Hit> const hit = closestHit(ray, triangle);
         if(!hit)
             return dot(ray.direction, lightDir) < 0.999f
                 ? skyColor
@@ -47,7 +41,7 @@ int main()
             .origin = hit->position,
             .direction = lightDir
         };
-        std::optional<Hit> const shadowHit = closestHit(shadowRay, sphere);
+        std::optional<Hit> const shadowHit = closestHit(shadowRay, triangle);
         float const NL = std::max(0.f, dot(hit->normal, lightDir));
 
         vec3 const color = !shadowHit
